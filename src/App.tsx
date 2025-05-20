@@ -1,59 +1,60 @@
-/*import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-
-const client = generateClient<Schema>();
-
-function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
-
-  useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }, []);
-
-  function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
-  }
-
-  return (
-    <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
-      </div>
-    </main>
-  );
-}
-
-export default App;*/
-
+import { useState } from 'react';
 import { Authenticator } from '@aws-amplify/ui-react';
-import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
-import outputs from "../amplify_outputs.json";
-
-Amplify.configure(outputs);
 
 export default function App() {
+
+    const module_data = 'data'
+    const module_controller = 'controller'
+    const module_about = 'about'
+
+    const [activeTab, setActiveTab] = useState(module_data);
+
+    const renderContent = () => {
+        switch (activeTab) {
+            case module_data:
+                return <div>Module "Data" Content</div>;
+            case module_controller:
+                return <div>Module "Controller" Content</div>;
+            case module_about:
+                return <div>Module "About" Content</div>;
+            default:
+                return <div>Please select a module.</div>;
+        }
+    };
+
     return (
-        <Authenticator>
+        <Authenticator hideSignUp={true}>
             {({ signOut, user }) => (
-                <main>
-                    <h1>Hello {user?.username}</h1>
-                    <button onClick={signOut}>Sign out</button>
-                </main>
+
+                <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    {/* Header */}
+                    <header style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '1rem',
+                        backgroundColor: '#1e40af',
+                        color: 'white'
+                    }}>
+                        <div><strong>{user?.username}</strong></div>
+
+                        <nav style={{ display: 'flex', gap: '1rem' }}>
+                            <button onClick={() => setActiveTab(module_data)}>Data</button>
+                            <button onClick={() => setActiveTab(module_controller)}>Controller</button>
+                            <button onClick={() => setActiveTab(module_about)}>About</button>
+                        </nav>
+
+                        <button onClick={signOut} style={{ background: 'white', color: '#1e40af', padding: '0.4rem 0.8rem' }}>
+                            Logout
+                        </button>
+                    </header>
+
+                    {/* Main Content */}
+                    <main style={{ flex: 1, padding: '2rem' }}>
+                        {renderContent()}
+                    </main>
+                </div>
             )}
         </Authenticator>
     );

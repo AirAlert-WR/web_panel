@@ -6,26 +6,6 @@ import * as Tabs from './tabs';
 
 export default function App() {
 
-    const [activeTab, setActiveTab] = useState(Tabs.GetTab(Tabs.DEFAULT_TAB_ID));
-
-    function getNavigationBar() {
-
-        return (
-            <nav style={{ display: 'flex', gap: '1rem' }}>
-                {
-                    Tabs.TAB_IDS.map((tabId) => {
-                        const temporaryTab = Tabs.GetTab(tabId);
-                        return (
-                            <button key={tabId} onClick={() => setActiveTab(temporaryTab)}>
-                                {temporaryTab.caption}
-                            </button>
-                        );
-                    })
-                }
-            </nav>
-        );
-    }
-
     return (
         <Authenticator hideSignUp={true}>
             {({ signOut, user }) => (
@@ -42,9 +22,6 @@ export default function App() {
                     }}>
                         <div><strong>{user?.username}</strong></div>
 
-                        {
-                            getNavigationBar()
-                        }
 
                         <button onClick={signOut} style={{ background: 'white', color: '#1e40af', padding: '0.4rem 0.8rem' }}>
                             Logout
@@ -53,7 +30,7 @@ export default function App() {
 
                     {/* Main Content */}
                     <main style={{ flex: 1, padding: '2rem' }}>
-                        <activeTab.displayContent />
+                        {/* TODO */}
                     </main>
                 </div>
             )}

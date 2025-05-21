@@ -1,6 +1,8 @@
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 export default function App() {
 
     return (
@@ -27,7 +29,16 @@ export default function App() {
 
                     {/* Main Content */}
                     <main style={{ flex: 1, padding: '2rem' }}>
-                        {/* TODO */}
+
+                        <Tabs defaultValue="data">
+                            <TabsList>
+                                <TabsTrigger value="data">Data</TabsTrigger>
+                                <TabsTrigger value="controller">Controller</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="data">Tab content for data</TabsContent>
+                            <TabsContent value="controller">Tab content for controller</TabsContent>
+                        </Tabs>
+
                     </main>
                 </div>
             )}

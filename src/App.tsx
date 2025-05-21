@@ -2,26 +2,29 @@ import { useState } from 'react';
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
+import * as Tabs from './tabs';
+
 export default function App() {
 
-    const module_data = 'data'
-    const module_controller = 'controller'
-    const module_about = 'about'
+    const [activeTab, setActiveTab] = useState(Tabs.GetTab(Tabs.DEFAULT_TAB_ID));
 
-    const [activeTab, setActiveTab] = useState(module_data);
+    function getNavigationBar() {
 
-    const renderContent = () => {
-        switch (activeTab) {
-            case module_data:
-                return <div>Module "Data" Content</div>;
-            case module_controller:
-                return <div>Module "Controller" Content</div>;
-            case module_about:
-                return <div>Module "About" Content</div>;
-            default:
-                return <div>Please select a module.</div>;
-        }
-    };
+        return (
+            <nav style={{ display: 'flex', gap: '1rem' }}>
+                {
+                    Tabs.TAB_IDS.map((tabId) => {
+                        const temporaryTab = Tabs.GetTab(tabId);
+                        return (
+                            <button key={tabId} onClick={() => setActiveTab(temporaryTab)}>
+                                {temporaryTab.caption}
+                            </button>
+                        );
+                    })
+                }
+            </nav>
+        );
+    }
 
     return (
         <Authenticator hideSignUp={true}>
@@ -39,11 +42,9 @@ export default function App() {
                     }}>
                         <div><strong>{user?.username}</strong></div>
 
-                        <nav style={{ display: 'flex', gap: '1rem' }}>
-                            <button onClick={() => setActiveTab(module_data)}>Data</button>
-                            <button onClick={() => setActiveTab(module_controller)}>Controller</button>
-                            <button onClick={() => setActiveTab(module_about)}>About</button>
-                        </nav>
+                        {
+                            getNavigationBar()
+                        }
 
                         <button onClick={signOut} style={{ background: 'white', color: '#1e40af', padding: '0.4rem 0.8rem' }}>
                             Logout
@@ -52,7 +53,7 @@ export default function App() {
 
                     {/* Main Content */}
                     <main style={{ flex: 1, padding: '2rem' }}>
-                        {renderContent()}
+                        <activeTab.displayContent />
                     </main>
                 </div>
             )}

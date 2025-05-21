@@ -1,8 +1,5 @@
-import { useState } from 'react';
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
-
-import * as Tabs from './tabs';
 
 export default function App() {
 

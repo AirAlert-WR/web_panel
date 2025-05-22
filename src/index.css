@@ -8,18 +8,10 @@ body {
   margin: 0;
   height: 100vh;
   width: 100vw;
-  /* font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
-  align-items: center;*/
+  align-items: center;
 }
-
-/*
-main {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}*/
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

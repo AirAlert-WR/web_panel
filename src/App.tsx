@@ -12,7 +12,10 @@ export default function App() {
 
 
 
-                <div>
+                <div style = {{
+                    width: "100vw",
+                    height: "100vh"
+                }}>
                     <Button onClick={signOut}>Logout</Button>
 
                     <Tabs defaultValue="data">

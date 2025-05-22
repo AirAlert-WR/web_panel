@@ -43,6 +43,9 @@ export default function App() {
                                 <CardContent>
                                     Content
                                 </CardContent>
+                                <CardFooter>
+                                    Footer
+                                </CardFooter>
                             </Card>
 
                         </TabsContent>
@@ -56,6 +59,9 @@ export default function App() {
                                 <CardContent>
                                     Content
                                 </CardContent>
+                                <CardFooter>
+                                    Footer
+                                </CardFooter>
                             </Card>
 
                         </TabsContent>
@@ -69,6 +75,9 @@ export default function App() {
                                 <CardContent>
                                     Content
                                 </CardContent>
+                                <CardFooter>
+                                    Footer
+                                </CardFooter>
                             </Card>
 
                         </TabsContent>

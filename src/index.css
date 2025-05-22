@@ -14,11 +14,12 @@ body {
   align-items: center;*/
 }
 
+/*
 main {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-}
+}*/
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

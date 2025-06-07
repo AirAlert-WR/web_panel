@@ -1,15 +1,44 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
+/**
+ * IoT-Core Datenmodell für Geräte und Nachrichten
+ */
 const schema = a.schema({
-  Todo: a
+  // Gerätedaten
+  Device: a
     .model({
-      content: a.string(),
+      deviceId: a.string().required(),
+      name: a.string().required(),
+      type: a.string().required(),
+      status: a.string(),
+      lastConnected: a.datetime(),
+      metadata: a.json(),
+    })
+    .authorization((allow) => [allow.publicApiKey()])
+    .identifier(["deviceId"]),
+
+  // IoT-Nachrichten
+  Message: a
+    .model({
+      topic: a.string().required(),
+      payload: a.json().required(),
+      timestamp: a.datetime().required(),
+      deviceId: a.string().required(),
+      direction: a.enum(["INBOUND", "OUTBOUND"]).required(),
+      processed: a.boolean().default(false),
+    })
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  // Kommandos für Geräte
+  Command: a
+    .model({
+      deviceId: a.string().required(),
+      commandType: a.string().required(),
+      payload: a.json().required(),
+      status: a.enum(["PENDING", "SENT", "DELIVERED", "FAILED"]).default("PENDING"),
+      createdAt: a.datetime().required(),
+      sentAt: a.datetime(),
+      responseId: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 });

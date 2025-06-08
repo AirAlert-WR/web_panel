@@ -1,3 +1,38 @@
+export const policyDocument = JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+        {
+            Effect: "Allow",
+            Action: [
+                "iot:Connect"
+            ],
+            Resource: "*"
+        },
+        {
+            Effect: "Allow",
+            Action: [
+                "iot:Publish",
+                "iot:Subscribe",
+                "iot:Receive"
+            ],
+            Resource: [
+                `arn:aws:iot:${process.env.AWS_REGION!}:${process.env.AWS_ACCOUNT_ID!}:topic/*`,
+                `arn:aws:iot:${process.env.AWS_REGION!}:${process.env.AWS_ACCOUNT_ID!}:topicfilter/*`
+            ]
+        },
+        {
+            Effect: "Allow",
+            Action: [
+                "iot:GetThingShadow",
+                "iot:UpdateThingShadow",
+                "iot:DeleteThingShadow"
+            ],
+            Resource: `arn:aws:iot:${process.env.AWS_REGION!}:${process.env.AWS_ACCOUNT_ID!}:thing/*`
+        }
+    ]
+});
+
+export const rootCertificate = `
 -----BEGIN CERTIFICATE-----
 MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF
 ADA5MQswCQYDVQQGEwJVUzEPMA0GA1UEChMGQW1hem9uMRkwFwYDVQQDExBBbWF6
@@ -18,3 +53,4 @@ o/ufQJVtMVT8QtPHRh8jrdkPSHCa2XV4cdFyQzR1bldZwgJcJmApzyMZFo6IQ6XU
 5MsI+yMRQ+hDKXJioaldXgjUkK642M4UwtBV8ob2xJNDd2ZhwLnoQdeXeGADbkpy
 rqXRfboQnoZsG4q5WTP468SQvvG5
 -----END CERTIFICATE-----
+`.trim()

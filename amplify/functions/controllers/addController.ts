@@ -1,32 +1,28 @@
 import {
     AttachPolicyCommand,
     AttachThingPrincipalCommand,
-    CreateKeysAndCertificateCommand,
+    CreateKeysAndCertificateCommand, CreatePolicyCommand,
     CreateThingCommand,
+    CreateThingTypeCommand,
     IoTClient
 } from "@aws-sdk/client-iot"
 import {IoTDataPlaneClient, UpdateThingShadowCommand} from "@aws-sdk/client-iot-data-plane"
-import type {APIGatewayProxyHandler} from "aws-lambda";
 import {PutObjectCommand, S3Client} from "@aws-sdk/client-s3"
 import JSZip from 'jszip';
-import path from "path";
-import {readFile} from "fs/promises";
-
-import {parseWithSchema} from "../common/helpers.parse";
 
 import {
     ControllerCloudSettings,
     MutableControllerCloudSettings,
-    MutableControllerCloudSettingsSchema,
     TYPE_CONTROLLER
 } from "../types/controller.cloud";
-import {AppError, ValidationError} from "../common/errors";
+import {AppError, ValidationError} from "../types/errors";
 import {ControllerConfig} from "../types/controller.config";
 import ini from "ini";
+import {policyDocument, rootCertificate} from "./assets";
 
 // Global instances
 const ioTClient = new IoTClient({});
-const ioTDataClient = new IoTDataPlaneClient({ endpoint: process.env.IOT_ENDPOINT! });
+const ioTDataClient = new IoTDataPlaneClient({});
 const s3Client = new S3Client({});
 
 // ####################################################################################################################
@@ -152,9 +148,8 @@ async function createZip(controllerID: string, content: CreateZipContent): Promi
         // Creating the configuration
         const configResult = createConfig(configContent)
 
-        // Opening CA file (asset in structure) and read its content
-        const rootCAPath = path.join(__dirname, 'assets/AmazonRootCA1.pem');
-        const contentRootCA = await readFile(rootCAPath, 'utf-8');
+        // Getting embedded root certificate
+        const contentRootCA = rootCertificate
 
         // Packing the ZIP file
         const zip = new JSZip();
@@ -166,7 +161,7 @@ async function createZip(controllerID: string, content: CreateZipContent): Promi
 
         // Uploading to S3
         const futureLink = `devices/${controllerID}.zip`;
-        const bucketName = process.env.S3_BUCKET_NAME!;
+        const bucketName = process.env.BUCKET_NAME!;
         await s3Client.send(
             new PutObjectCommand({
                 Bucket: bucketName,
@@ -206,7 +201,7 @@ async function createZip(controllerID: string, content: CreateZipContent): Promi
  *
  * @return nothing
  */
-async function addController(settings: MutableControllerCloudSettings): Promise<void> {
+export async function addController(settings: MutableControllerCloudSettings): Promise<void> {
 
     try {
         // Setting up a raw controller config
@@ -215,6 +210,11 @@ async function addController(settings: MutableControllerCloudSettings): Promise<
             configURL: "",
             settings: settings,
         }
+
+        // Creating the thing type
+        await ioTClient.send(new CreateThingTypeCommand({
+            thingTypeName: TYPE_CONTROLLER
+        }))
 
         // Creating the thing
         await ioTClient.send(new CreateThingCommand({
@@ -232,6 +232,12 @@ async function addController(settings: MutableControllerCloudSettings): Promise<
         }))
         // Attach policy to thing
         const ioTPolicyName = process.env.IOT_POLICY_NAME!
+        try {
+            await ioTClient.send(new CreatePolicyCommand({
+                policyName: ioTPolicyName,
+                policyDocument: policyDocument //TODO fix
+            }))
+        } catch (e) { console.error(e) }
         await ioTClient.send(new AttachPolicyCommand({
             policyName: ioTPolicyName,
             target: certOutput.certificateArn!,
@@ -247,6 +253,7 @@ async function addController(settings: MutableControllerCloudSettings): Promise<
         )
         // Adding URL to configuration
         properties.configURL = zipResult.zipURL
+
 
         // UPLOADING THE DEVICE SHADOW
         await ioTDataClient.send(new UpdateThingShadowCommand({
@@ -264,47 +271,5 @@ async function addController(settings: MutableControllerCloudSettings): Promise<
             ? e.message
             : "Other error"
         throw new AppError(`Failed to add the new controller: ${msg}`)
-    }
-}
-
-// ####################################################################################################################
-// ####################################################################################################################
-// ####################################################################################################################
-
-/**
- * The AWS lambda handler to export
- *
- * @author Danilo Bleul
- * @since 1.0
- */
-export const handler: APIGatewayProxyHandler = async (event) => {
-
-    try {
-        // Parsing the json body
-        const settings: MutableControllerCloudSettings = parseWithSchema(event.body ?? "{}", MutableControllerCloudSettingsSchema);
-
-        // Calling the function
-        await addController(settings);
-
-        // Returning success
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: "Successfully added controller",
-            })
-        }
-
-    } catch (e) {
-        // On exception: Output error
-        const error = e instanceof AppError
-            ? e
-            : new AppError("Unexpected error occurred");
-
-        console.log(error)
-
-        return {
-            statusCode: error.statusCode,
-            body: JSON.stringify({ message: error.message })
-        };
     }
 }

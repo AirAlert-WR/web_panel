@@ -3,7 +3,7 @@ import z from "zod"
 /**
  * Constant for the IoT thing type (-> CONTROLLER)
  */
-export const TYPE_CONTROLLER = "AirAlert Controller"
+export const TYPE_CONTROLLER = "AirAlertController"
 
 /**
  * Schema for the cloud-based WRITABLE controller config

@@ -1,6 +1,6 @@
 import {IoTClient, ListThingsCommand, ListThingsCommandOutput} from "@aws-sdk/client-iot";
-import type {APIGatewayProxyHandler} from "aws-lambda";
-import {AppError} from "../common/errors";
+import {AppError} from "../types/errors";
+import {TYPE_CONTROLLER} from "../types/controller.cloud";
 
 // Global instances
 const ioTClient = new IoTClient({});
@@ -28,9 +28,9 @@ export async function getAllControllers(): Promise<string[]> {
         do {
             const response: ListThingsCommandOutput = await ioTClient.send(
                 new ListThingsCommand({
-                    nextToken,
-                    maxResults: 50
-                    // TODO filter for thingTypeName!
+                    nextToken: nextToken,
+                    thingTypeName: TYPE_CONTROLLER,
+                    maxResults: 50,
                 })
             );
 
@@ -51,41 +51,3 @@ export async function getAllControllers(): Promise<string[]> {
         throw new AppError(`Failed to fetch all controller ids: ${msg}`)
     }
 }
-
-// ####################################################################################################################
-// ####################################################################################################################
-// ####################################################################################################################
-
-/**
- * The AWS lambda handler to export
- *
- * @author Danilo Bleul
- * @since 1.0
- */
-export const handler: APIGatewayProxyHandler = async () => {
-
-    try {
-
-        // Calling the function; fetching all IDs
-        const controllerIds = await getAllControllers();
-
-        // Returning all controller ids
-        return {
-            statusCode: 200,
-            body: JSON.stringify(controllerIds)
-        }
-
-    } catch (e) {
-        // On exception: Output error
-        const error = e instanceof AppError
-            ? e
-            : new AppError("Unexpected error occurred");
-
-        console.log(error)
-
-        return {
-            statusCode: error.statusCode,
-            body: JSON.stringify({ message: error.message })
-        };
-    }
-};

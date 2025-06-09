@@ -5,7 +5,7 @@ import {getAllControllers} from "./getAllControllers";
 import {parseWithSchema} from "../types/helpers.parse";
 
 // Global instances
-const ioTDataClient = new IoTDataPlaneClient({ endpoint: process.env.IOT_ENDPOINT! });
+const ioTDataClient = new IoTDataPlaneClient({});
 
 // ####################################################################################################################
 // ####################################################################################################################
@@ -19,7 +19,7 @@ const ioTDataClient = new IoTDataPlaneClient({ endpoint: process.env.IOT_ENDPOIN
  *
  * @param controllerID the controller's identification
  *
- * @return the controller properties
+ * @return the controller properties OR the parsing success
  */
 export async function getController(controllerID: string): Promise<ControllerCloudSettings> {
 
@@ -44,7 +44,7 @@ export async function getController(controllerID: string): Promise<ControllerClo
         if (!desired) throw new AppError("Invalid device shadow format")
 
         // Return after validation
-        return parseWithSchema(desired, ControllerCloudSettingsSchema)
+        return parseWithSchema(JSON.stringify(desired), ControllerCloudSettingsSchema)
 
     } catch (e) {
         // On failure -> error

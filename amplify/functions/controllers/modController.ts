@@ -6,7 +6,7 @@ import {
 import {AppError} from "../types/errors";
 import {getController} from "./getController";
 
-const ioTDataClient = new IoTDataPlaneClient({ endpoint: process.env.IOT_ENDPOINT! });
+const ioTDataClient = new IoTDataPlaneClient({});
 
 // ####################################################################################################################
 // ####################################################################################################################

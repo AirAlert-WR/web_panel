@@ -1,6 +1,6 @@
-import { defineBackend } from "@aws-amplify/backend";
+import {defineBackend} from "@aws-amplify/backend";
 import { auth } from "./auth/resource";
-import {controllerHandler, ENV_CONSTANTS } from "./functions/resource"
+import {controllerHandler, dataHandler} from "./functions/resource"
 import {
   AuthorizationType,
   CognitoUserPoolsAuthorizer,
@@ -10,18 +10,20 @@ import {
 } from "aws-cdk-lib/aws-apigateway";
 import {Stack} from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
+import {namings} from "./defines";
 
 // Merge backend processes
 const backend = defineBackend({
-  auth,
-  controllerHandler,
+    auth,
+    controllerHandler,
+    dataHandler,
 });
 
 // create a new API stack
 const apiStack = backend.createStack("AirAlertApiStack");
 // create a new REST API
-const myRestApi = new RestApi(apiStack, "AirAlertRestApi", {
-  restApiName: "AirAlertRestApi",
+const myRestApi = new RestApi(apiStack, "AirAlertRestApi2", {
+  restApiName: "AirAlertRestApi2",
   deploy: true,
   deployOptions: {
     stageName: "dev",
@@ -44,7 +46,7 @@ const myRestApi = new RestApi(apiStack, "AirAlertRestApi", {
 // Saving definition
 const controllerLambda = backend.controllerHandler.resources.lambda
 // Adding policies: IOT
-const iotPolicy = new iam.PolicyStatement({
+const iotPolicyController = new iam.PolicyStatement({
   actions: [
       "iot:ListThings",
       "iot:DescribeThing",
@@ -58,13 +60,15 @@ const iotPolicy = new iam.PolicyStatement({
       "iot:AttachThingPrincipal",
       "iot:AttachPolicy",
       "iot:CreatePolicy",
+      "iot:ListThingPrincipals",
+      "iot:DetachThingPrincipal",
   ],
   resources: ["*"], // TODO Optional: später auf Thing-Arn einschränken
 });
-controllerLambda.addToRolePolicy(iotPolicy);
+controllerLambda.addToRolePolicy(iotPolicyController);
 // Adding policies: S3
-const bucketName = ENV_CONSTANTS.BUCKET_NAME
-const s3Policy = new iam.PolicyStatement({
+const bucketName = namings.s3_bucket_name
+const s3PolicyController = new iam.PolicyStatement({
   actions: [
       "s3:GetObject",
       "s3:PutObject",
@@ -73,7 +77,7 @@ const s3Policy = new iam.PolicyStatement({
   ],
   resources: [`arn:aws:s3:::${bucketName}/*`],
 });
-controllerLambda.addToRolePolicy(s3Policy);
+controllerLambda.addToRolePolicy(s3PolicyController);
 
 // Lambda integration
 const controllerIntegration = new LambdaIntegration(
@@ -101,14 +105,59 @@ itemsPath.addMethod("GET", controllerIntegration);
 itemsPath.addMethod("DELETE", controllerIntegration);
 itemsPath.addMethod("PUT", controllerIntegration);
 
-/*
-// Redirecting on default
-controllersPath.addProxy({
-    anyMethod: true,
-    defaultIntegration: controllerIntegration,
-});*/
+/**
+ * Lambda integration: DATA
+ */
 
+// Saving definition
+const dataLambda = backend.dataHandler.resources.lambda
+// Adding policies: DynamoDB
+const ddbName = namings.ddb_table_name
+const ddbPolicyData = new iam.PolicyStatement({
+    actions: [
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+    ],
+    //resources: [`arn:aws:dynamodb:::table/${ddbName}`],
+    resources: [`*`]
+});
+dataLambda.addToRolePolicy(ddbPolicyData)
+// Adding policies: IOT
+const iotPolicyData = new iam.PolicyStatement({
+    actions: [
+        "iot:ListThings",
+    ],
+    resources: ["*"], // TODO Optional: später auf Thing-Arn einschränken
+});
+dataLambda.addToRolePolicy(iotPolicyData);
 
+// Lambda integration
+const dataIntegration = new LambdaIntegration(dataLambda);
+// Resource paths with authorization
+const dataPath = myRestApi.root.addResource("data", {
+    defaultMethodOptions: {
+        authorizationType: AuthorizationType.NONE,
+        //authorizer: cognitoAuth,
+    },
+});
+const dataPathGuiding = dataPath.addResource("guiding", {
+    defaultMethodOptions: {
+        authorizationType: AuthorizationType.NONE,
+        //authorizer: cognitoAuth,
+    },
+});
+dataPathGuiding.addMethod("GET",dataIntegration)
+const dataPathForTime = dataPath.addResource("forTime", {
+    defaultMethodOptions: {
+        authorizationType: AuthorizationType.NONE,
+        //authorizer: cognitoAuth,
+    },
+});
+dataPathForTime.addMethod("GET",dataIntegration)
 
 // add outputs to the configuration file: REST API and AUTHORIZER
 backend.addOutput({
@@ -120,5 +169,6 @@ backend.addOutput({
         apiName: myRestApi.restApiName,
       },
     },
+
   },
 });

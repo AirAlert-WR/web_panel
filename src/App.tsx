@@ -1,91 +1,48 @@
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
+import {SidebarInset, SidebarProvider} from './components/ui/sidebar';
+import {MySidebar, MySiteHeader} from './components/custom/global';
+import {useCurrentPage} from "@/pages";
+import {SidebarUserData} from "@/components/custom/embedded/sidebarUser.types.ts";
 
 export default function App() {
 
     return (
+        // Authenticator
         <Authenticator hideSignUp={true}>
-            {({ signOut }) => (
+            {({ user, signOut }) => {
 
+                // Saving userdata
+                const userData: SidebarUserData = {
+                    userName: user!.username,
+                    email: user!.userId,
+                    avatarPath: "/logo.png",
+                    onLogout: () => signOut
+                }
 
-
-                <div style = {{
-                    width: "90vw",
-                    height: "90vh"
-                }}>
-
-                    <Tabs defaultValue="data">
-                        <TabsList>
-                            <TabsTrigger value="data">Data</TabsTrigger>
-                            <TabsTrigger value="controller">Controller</TabsTrigger>
-                            <TabsTrigger value="about">About</TabsTrigger>
-                            {/*TODO Logo and Items*/}
-                            <Button onClick={signOut}>Logout</Button>
-                        </TabsList>
-                        <TabsContent value="data">
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Data</CardTitle>
-                                    <CardDescription>Diagrams showing and filtering the measuring data</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    Content
-                                </CardContent>
-                                <CardFooter>
-                                    Footer
-                                </CardFooter>
-                            </Card>
-
-                        </TabsContent>
-                        <TabsContent value="controller">
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Controller</CardTitle>
-                                    <CardDescription>Listing, modifying and deleting controllers</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    Content
-                                </CardContent>
-                                <CardFooter>
-                                    Footer
-                                </CardFooter>
-                            </Card>
-
-                        </TabsContent>
-                        <TabsContent value="about">
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>About</CardTitle>
-                                    <CardDescription>Telling the background of the project</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    Content
-                                </CardContent>
-                                <CardFooter>
-                                    Footer
-                                </CardFooter>
-                            </Card>
-
-                        </TabsContent>
-                    </Tabs>
-
-                </div>
-
-            )}
+                // Returning page
+            return (
+                <AppContent userData={userData}/>
+            )}}
         </Authenticator>
+    );
+}
+
+function AppContent({userData}: {userData: SidebarUserData}) {
+    const CurrentPage = useCurrentPage().component;
+
+    return (
+        <div style={{ width: "100vw", height: "100vh" }}>
+            <SidebarProvider>
+                <MySidebar variant="inset" userData={userData} />
+                <SidebarInset>
+                    <MySiteHeader />
+                    <div className="flex flex-1 flex-col">
+                        <CurrentPage />
+                    </div>
+                </SidebarInset>
+            </SidebarProvider>
+        </div>
     );
 }

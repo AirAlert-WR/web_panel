@@ -161,7 +161,7 @@ async function createZip(controllerID: string, content: CreateZipContent): Promi
 
         // Uploading to S3
         const futureLink = `devices/${controllerID}.zip`;
-        const bucketName = process.env.BUCKET_NAME!;
+        const bucketName = process.env.S3_BUCKET_NAME!;
         await s3Client.send(
             new PutObjectCommand({
                 Bucket: bucketName,

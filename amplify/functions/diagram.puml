@@ -165,7 +165,7 @@ package functions {
             class GetDataForTime implements functions.LambdaFunction {
                 + {override} handler
 
-                - {static} getDataForTime(untilTimestamp: string, frequency: number): DataAirQualityForTime
+                - {static} getDataForTime(untilTimestamp: string, segments: number): DataAirQualityForTime[]
             }
             GetDataForTime -> functions.types.data.DataAirQualityForTime: uses directly
 

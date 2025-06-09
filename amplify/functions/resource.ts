@@ -1,14 +1,22 @@
 import { defineFunction } from "@aws-amplify/backend";
 
-export const ENV_CONSTANTS = {
-    IOT_ENDPOINT: "awjg171sjqf2q-ats.iot.eu-central-1.amazonaws.com", //TODO critical
-    BUCKET_NAME: "airalertcconfigbucket", //TODO critical
-    IOT_POLICY_NAME: "airalertcontrollerpolicy"
-} as const
+import { namings } from "../defines"
 
+// Export handlers
 export const controllerHandler = defineFunction({
     name: "controllerHandler",
     entry: "./controllers/handler.ts",
 
-    environment: ENV_CONSTANTS
+    environment: {
+        S3_BUCKET_NAME: namings.s3_bucket_name,
+        IOT_POLICY_NAME: namings.iot_policy_name,
+    }
+})
+export const dataHandler = defineFunction({
+    name: "dataHandler",
+    entry: "./data/handler.ts",
+
+    environment: {
+        DDB_TABLE_NAME: namings.ddb_table_name,
+    }
 })

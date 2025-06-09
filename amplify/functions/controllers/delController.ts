@@ -31,7 +31,7 @@ export async function delController(controllerID: string): Promise<void> {
 
     try {
 
-        // Testing if controller existent
+        // Testing if controller exists
         const properties: ControllerCloudSettings = await getController(controllerID)
 
         // 1. Deleting the archive on S3
@@ -39,7 +39,7 @@ export async function delController(controllerID: string): Promise<void> {
         const s3Key = parseS3KeyFromUrl(configUrl);
         if (s3Key) {
             await s3Client.send(new DeleteObjectCommand({
-                Bucket: process.env.BUCKET_NAME!,
+                Bucket: process.env.S3_BUCKET_NAME!,
                 Key: s3Key
             }));
         }

@@ -18,12 +18,14 @@ export async function getDataGuiding(): Promise<DataAirQuality> {
 
     try {
 
+        // Tried to fetch Data from openAQ, left blank instead
+
         return {
-            pm2_5: 0,
-            pm10: 0,
-            co2: 0,
-            temperature: 0,
-            humidity: 0
+            pm2_5: 25,
+            pm10: 40,
+            co2: 750,
+            temperature: 20,
+            humidity: 50
         }
 
     } catch (e) {

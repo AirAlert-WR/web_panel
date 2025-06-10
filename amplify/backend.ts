@@ -3,11 +3,11 @@ import { auth } from "./auth/resource";
 import {controllerHandler, dataHandler} from "./functions/resource"
 import {
   AuthorizationType,
-  CognitoUserPoolsAuthorizer,
   Cors,
   LambdaIntegration,
   RestApi
 } from "aws-cdk-lib/aws-apigateway";
+import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import {Stack} from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import {namings} from "./defines";
@@ -23,21 +23,28 @@ const backend = defineBackend({
 const apiStack = backend.createStack("AirAlertApiStack");
 // create a new REST API
 const myRestApi = new RestApi(apiStack, "AirAlertRestApi2", {
-  restApiName: "AirAlertRestApi2",
-  deploy: true,
-  deployOptions: {
-    stageName: "dev",
-  },
-  defaultCorsPreflightOptions: {
-    allowOrigins: Cors.ALL_ORIGINS, // Restrict this to domains you trust
-    allowMethods: Cors.ALL_METHODS, // Specify only the methods you need to allow
-    allowHeaders: Cors.DEFAULT_HEADERS, // Specify only the headers you need to allow
-  },
+    restApiName: "AirAlertRestApi2",
+    deploy: true,
+    deployOptions: {
+        stageName: "dev",
+    },
+    defaultCorsPreflightOptions: {
+        allowOrigins: Cors.ALL_ORIGINS, // Restrict this to domains you trust
+        allowMethods: Cors.ALL_METHODS, // Specify only the methods you need to allow
+        allowHeaders: [
+            "Content-Type",
+            "X-Amz-Date",
+            "Authorization",
+            "X-Api-Key",
+            "X-Amz-Security-Token",
+            "X-Amplify-User-Agent"
+        ],
+    },
+    defaultMethodOptions: {
+        authorizationType: AuthorizationType.NONE,
+        apiKeyRequired: false,
+    },
 });
-// create a new Cognito User Pools authorizer
-/*const cognitoAuth = new CognitoUserPoolsAuthorizer(apiStack, "CognitoAuth", {
-  cognitoUserPools: [backend.auth.resources.userPool],
-});*/
 
 /**
  * Lambda integration: CONTROLLER
@@ -80,26 +87,14 @@ const s3PolicyController = new iam.PolicyStatement({
 controllerLambda.addToRolePolicy(s3PolicyController);
 
 // Lambda integration
-const controllerIntegration = new LambdaIntegration(
-    controllerLambda
-);
+const controllerIntegration = new LambdaIntegration(controllerLambda);
 // Resource path with authorization: controller general
-const controllersPath = myRestApi.root.addResource("controllers", {
-  defaultMethodOptions: {
-    authorizationType: AuthorizationType.NONE,
-    //authorizer: cognitoAuth,
-  },
-});
+const controllersPath = myRestApi.root.addResource("controllers");
 // Adding paths
 controllersPath.addMethod("GET", controllerIntegration);
 controllersPath.addMethod("POST", controllerIntegration);
 // Resource path with authorization: controller general
-const itemsPath = controllersPath.addResource("{id}", {
-    defaultMethodOptions: {
-        authorizationType: AuthorizationType.NONE,
-        //authorizer: cognitoAuth,
-    },
-});
+const itemsPath = controllersPath.addResource("{id}");
 // Adding paths
 itemsPath.addMethod("GET", controllerIntegration);
 itemsPath.addMethod("DELETE", controllerIntegration);
@@ -138,26 +133,31 @@ dataLambda.addToRolePolicy(iotPolicyData);
 // Lambda integration
 const dataIntegration = new LambdaIntegration(dataLambda);
 // Resource paths with authorization
-const dataPath = myRestApi.root.addResource("data", {
-    defaultMethodOptions: {
-        authorizationType: AuthorizationType.NONE,
-        //authorizer: cognitoAuth,
-    },
-});
-const dataPathGuiding = dataPath.addResource("guiding", {
-    defaultMethodOptions: {
-        authorizationType: AuthorizationType.NONE,
-        //authorizer: cognitoAuth,
-    },
-});
+const dataPath = myRestApi.root.addResource("data");
+const dataPathGuiding = dataPath.addResource("guiding");
 dataPathGuiding.addMethod("GET",dataIntegration)
-const dataPathForTime = dataPath.addResource("forTime", {
-    defaultMethodOptions: {
-        authorizationType: AuthorizationType.NONE,
-        //authorizer: cognitoAuth,
-    },
-});
+const dataPathForTime = dataPath.addResource("forTime");
 dataPathForTime.addMethod("GET",dataIntegration)
+
+// Create a new Access Policy for the events
+const apiRestPolicy = new Policy(apiStack, "AirAlertRestApiPolicy", {
+    statements: [
+        new PolicyStatement({
+            actions: ["execute-api:Invoke"],
+            resources: [
+                `${myRestApi.arnForExecuteApi("*", "/*", "dev")}`,
+            ],
+        }),
+    ],
+});
+// attach the policy to the authenticated and unauthenticated IAM roles
+backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(
+    apiRestPolicy
+);
+backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
+    apiRestPolicy
+);
+
 
 // add outputs to the configuration file: REST API and AUTHORIZER
 backend.addOutput({

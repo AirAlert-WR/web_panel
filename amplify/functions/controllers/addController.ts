@@ -1,7 +1,7 @@
 import {
     AttachPolicyCommand,
     AttachThingPrincipalCommand,
-    CreateKeysAndCertificateCommand, CreatePolicyCommand,
+    CreateKeysAndCertificateCommand,
     CreateThingCommand,
     CreateThingTypeCommand,
     IoTClient
@@ -18,7 +18,7 @@ import {
 import {AppError, ValidationError} from "../types/errors";
 import {ControllerConfig} from "../types/controller.config";
 import ini from "ini";
-import {policyDocument, rootCertificate} from "./assets";
+import {rootCertificate} from "./assets";
 
 // Global instances
 const ioTClient = new IoTClient({});
@@ -63,7 +63,7 @@ function createConfig(content: CreateConfigContent): string {
     try {
 
         // Setting config file
-        const host = ""
+        const host = ioTClient.config.endpoint?.name ?? ""
         const config: ControllerConfig = {
             mqtt: {
                 username: "",
@@ -73,7 +73,7 @@ function createConfig(content: CreateConfigContent): string {
                 path_RootCA: content.pathRootCA,
                 use_tls: true,
                 host: host, //TODO
-                port: 0, //TODO
+                port: 8883, //TODO
                 id: content.id
             }
         } as const
@@ -232,12 +232,6 @@ export async function addController(settings: MutableControllerCloudSettings): P
         }))
         // Attach policy to thing
         const ioTPolicyName = process.env.IOT_POLICY_NAME!
-        try {
-            await ioTClient.send(new CreatePolicyCommand({
-                policyName: ioTPolicyName,
-                policyDocument: policyDocument //TODO fix
-            }))
-        } catch (e) { console.error(e) }
         await ioTClient.send(new AttachPolicyCommand({
             policyName: ioTPolicyName,
             target: certOutput.certificateArn!,

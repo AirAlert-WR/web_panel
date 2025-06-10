@@ -2,7 +2,7 @@ import {AppError} from "../types/errors";
 import {ControllerCloudSettings, ControllerCloudSettingsSchema} from "../types/controller.cloud";
 import {GetThingShadowCommand, IoTDataPlaneClient} from "@aws-sdk/client-iot-data-plane";
 import {getAllControllers} from "./getAllControllers";
-import {parseWithSchema} from "../types/helpers.parse";
+import {parseWithSchema} from "../types/helpers";
 
 // Global instances
 const ioTDataClient = new IoTDataPlaneClient({});

@@ -1,6 +1,6 @@
 import {APIGatewayProxyHandler} from "aws-lambda";
 import { addController } from "./addController";
-import {parseWithSchema} from "../types/helpers.parse";
+import {parseWithSchema, createApiResponse } from "../types/helpers";
 import {MutableControllerCloudSettingsSchema} from "../types/controller.cloud";
 import { getAllControllers } from "./getAllControllers";
 import { getController } from "./getController";
@@ -34,7 +34,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 // Running function
                 const result = await getAllControllers()
                 // Returning success + result
-                return { statusCode: 200, body: JSON.stringify(result) }
+                return createApiResponse(200, result)
             }
             // POST: method "AddController"
             if (method === "POST") {
@@ -43,7 +43,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 // Running function
                 await addController(settings)
                 // Returning success
-                return { statusCode: 200, body: JSON.stringify({ message: "Successfully added new controller"})}
+                return createApiResponse(200, { message: "Successfully added new controller"})
             }
 
         }
@@ -55,7 +55,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 // Running function
                 const result = await getController(controllerID)
                 // Returning success + result
-                return { statusCode: 200, body: JSON.stringify(result) }
+                return createApiResponse(200, result)
             }
             // PUT: method "ModController"
             if (method === "PUT") {
@@ -64,14 +64,14 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                 // Running function
                 await modController(controllerID, settings)
                 // Returning success
-                return { statusCode: 200, body: JSON.stringify({ message: `Successfully updated controller ${controllerID}`})}
+                return createApiResponse(200, { message: `Successfully updated controller ${controllerID}`})
             }
             // DELETE: method "DelController"
             if (method === "DELETE") {
                 // Running function
                 await delController(controllerID)
                 // Returning success
-                return { statusCode: 200, body: JSON.stringify({ message: `Successfully delete controller controller ${controllerID}`})}
+                return createApiResponse(200, { message: `Successfully delete controller controller ${controllerID}`})
             }
         }
 
@@ -86,9 +86,6 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
         console.error("Handler error: ",error)
 
-        return {
-            statusCode: error.statusCode,
-            body: JSON.stringify({ message: error.message })
-        };
+        return createApiResponse(error.statusCode, { message: error.message })
     }
 }

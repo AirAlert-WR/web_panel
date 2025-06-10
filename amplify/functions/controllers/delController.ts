@@ -5,7 +5,7 @@ import {
     ListThingPrincipalsCommand
 } from "@aws-sdk/client-iot";
 import {DeleteObjectCommand, S3Client} from "@aws-sdk/client-s3";
-import {parseS3KeyFromUrl} from "../types/helpers.parse";
+import {parseS3KeyFromUrl} from "../types/helpers";
 import {ControllerCloudSettings} from "../types/controller.cloud";
 import {AppError} from "../types/errors";
 import {getController} from "./getController";

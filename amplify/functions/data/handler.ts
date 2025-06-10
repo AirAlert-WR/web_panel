@@ -2,6 +2,7 @@ import {APIGatewayProxyHandler} from "aws-lambda";
 import {AppError, NotFoundError, ValidationError} from "../types/errors";
 import {getDataGuiding} from "./getDataGuiding";
 import {getDataForTime} from "./getDataForTime";
+import {createApiResponse } from "../types/helpers";
 
 // ####################################################################################################################
 // ####################################################################################################################
@@ -31,7 +32,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                     // Running the function
                     const result = await getDataGuiding()
                     // Returning success + result
-                    return { statusCode: 200, body: JSON.stringify(result) }
+                    return createApiResponse(200, result)
                 }
                 break;
             }
@@ -52,7 +53,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
                     // Running the function
                     const result = await getDataForTime(untilTimeStamp, segmentsNumber)
                     // Returning success + result
-                    return { statusCode: 200, body: JSON.stringify(result) }
+                    return createApiResponse(200, result)
 
 
                 }
@@ -72,9 +73,6 @@ export const handler: APIGatewayProxyHandler = async (event) => {
 
         console.error("Handler error: ",error)
 
-        return {
-            statusCode: error.statusCode,
-            body: JSON.stringify({ message: error.message })
-        };
+        return createApiResponse(error.statusCode, { message: error.message })
     }
 }

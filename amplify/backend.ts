@@ -69,6 +69,7 @@ const iotPolicyController = new iam.PolicyStatement({
       "iot:CreatePolicy",
       "iot:ListThingPrincipals",
       "iot:DetachThingPrincipal",
+      "iot:DescribeEndpoint",
   ],
   resources: ["*"], // TODO Optional: später auf Thing-Arn einschränken
 });
@@ -107,7 +108,6 @@ itemsPath.addMethod("PUT", controllerIntegration);
 // Saving definition
 const dataLambda = backend.dataHandler.resources.lambda
 // Adding policies: DynamoDB
-const ddbName = namings.ddb_table_name
 const ddbPolicyData = new iam.PolicyStatement({
     actions: [
         "dynamodb:GetItem",

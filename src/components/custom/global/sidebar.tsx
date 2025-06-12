@@ -12,11 +12,12 @@ import {
     Sidebar,
 } from "@/components/ui/sidebar.tsx"
 
-import { SidebarUserComponent } from "@/components/custom/embedded/sidebarUser.tsx"
+//import { SidebarUserComponent } from "@/components/custom/embedded/sidebarUser.tsx"
 
 import * as Pages from "@/pages"
 import {Avatar, AvatarFallback, AvatarImage} from "@radix-ui/react-avatar";
 import type {SidebarUserData} from "@/components/custom/embedded/sidebarUser.types.ts";
+import { Button } from "@aws-amplify/ui-react";
 
 function NavigationSection(
     { ...props }: React.ComponentPropsWithoutRef<typeof SidebarGroup>
@@ -80,7 +81,9 @@ export function MySidebar(
       <SidebarFooter>
 
         {/* User account button */}
-        <SidebarUserComponent data={userData} />
+          {/*<SidebarUserComponent data={userData} />*/}
+          <Button variation="warning" colorTheme="info" onClick={() => userData.onLogout()}>Logout</Button>
+
 
       </SidebarFooter>
     </Sidebar>

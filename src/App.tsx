@@ -14,11 +14,11 @@ export default function App() {
             {({ user, signOut }) => {
 
                 // Saving userdata
-                const userData: SidebarUserData = {
+                const userData : SidebarUserData = {
                     userName: user!.username,
                     email: user!.userId,
                     avatarPath: "/logo.png",
-                    onLogout: () => signOut
+                    onLogout: () => signOut!()
                 }
 
                 // Returning page

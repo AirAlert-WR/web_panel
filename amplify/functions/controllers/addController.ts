@@ -206,7 +206,7 @@ export async function addController(settings: MutableControllerCloudSettings): P
     try {
         // Setting up a raw controller config
         const properties: ControllerCloudSettings = {
-            id: `controller-${settings.name}-${Date.now()}`,
+            id: `controller-${Date.now()}`,
             configURL: "",
             settings: settings,
         }

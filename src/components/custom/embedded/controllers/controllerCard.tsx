@@ -7,6 +7,7 @@ import {
     CardDescription,
     CardFooter,
     CardHeader,
+    CardContent,
     CardTitle
 } from "@/components/ui/card";
 import {
@@ -25,7 +26,7 @@ import {
     ControllerDialogKind,
     type ControllerDialogCallback
 } from "./controllerDialog.types"
-import type {ControllerProperties} from "@/types/apiTypes.ts";
+import type {FullControllerProperties} from "@/types/apiTypes.ts";
 
 /**
  * Method for creating a grid card representing a controller
@@ -41,7 +42,7 @@ import type {ControllerProperties} from "@/types/apiTypes.ts";
  */
 export function ControllerCard(
     {controller, onDialogSubmit, ...props}: {
-        controller: ControllerProperties,
+        controller: FullControllerProperties,
         onDialogSubmit: ControllerDialogCallback,
     } & React.ComponentProps<typeof Card>
 ) {
@@ -50,14 +51,19 @@ export function ControllerCard(
 
             {/* Header with description and id */}
             <CardHeader>
-                <CardDescription>AirAlert controller</CardDescription>
+                <CardDescription>{controller.id}</CardDescription>
                 <CardTitle className="text-2xl font-semibold tabular-nums">
-                    {controller.name}
+                    {controller.settings.name}
                 </CardTitle>
                 <CardAction>
                     <Icons.IconCpu className="size-16"/>
                 </CardAction>
             </CardHeader>
+
+            {/* Content with link */}
+            <CardContent>
+                <a href={controller.configURL}> 🔗 Download config HERE </a>
+            </CardContent>
 
             {/* Footer with nested dialog*/}
             <CardFooter className="flex-col items-start gap-1.5 text-sm">

@@ -5,7 +5,9 @@ import {
 } from "../../amplify/functions/types/data.ts";
 import {
     MutableControllerCloudSettings,
-    MutableControllerCloudSettingsSchema
+    ControllerCloudSettings,
+    ControllerCloudSettingsSchema,
+    MutableControllerCloudSettingsSchema,
 } from "../../amplify/functions/types/controller.cloud.ts";
 
 export type FilteredMeasurementData = DataAirQualityForTime
@@ -14,4 +16,6 @@ export type MeasurementData = DataAirQuality
 
 export type ControllerProperties = MutableControllerCloudSettings
 export const ControllerProperties = MutableControllerCloudSettings
-export const ControllerPropertiesSchema = MutableControllerCloudSettingsSchema;
+export const ControllerPropertiesSchema = MutableControllerCloudSettingsSchema
+export type FullControllerProperties = ControllerCloudSettings
+export const FullControllerPropertiesSchema = ControllerCloudSettingsSchema

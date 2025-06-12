@@ -29,9 +29,6 @@ function Content() {
                             untilTimeStamp: new Date(Date.now() - 1000000).toISOString(),
                             segments: "20",
                         },
-                        retryStrategy: {
-                            strategy: 'no-retry'
-                        },
                     }
                 });
 
@@ -43,7 +40,7 @@ function Content() {
 
             } catch (e) {
                 console.error("API call failed", e);
-                setError("Messdaten konnten nicht geladen werden.");
+                setError("Could not fetch data");
             }
         }
 
@@ -55,7 +52,7 @@ function Content() {
     }
 
     if (measurementData === null) {
-        return <div className="text-gray-500">Lade Messdaten...</div>;
+        return <div className="text-gray-500">Load data...</div>;
     }
 
     return (

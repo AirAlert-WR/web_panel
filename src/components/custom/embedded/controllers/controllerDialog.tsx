@@ -24,7 +24,7 @@ import {
     type ControllerDialogCallback,
 } from "./controllerDialog.types"
 
-import {ControllerProperties, ControllerPropertiesSchema} from "@/types/apiTypes.ts";
+import {FullControllerProperties, ControllerProperties, ControllerPropertiesSchema} from "@/types/apiTypes.ts";
 import {useState} from "react";
 import {ZodNumber} from "zod";
 
@@ -164,7 +164,7 @@ function ControllerDialogInputs({data, onValueChange}: {
  * @param kind The kind of the dialog to create
  * @see ControllerDialogKind
  * @param controller The properties of the corresponding controller
- * @see ControllerProperties
+ * @see FullControllerProperties
  * @param onDialogSubmit The callback function if a dialog was closed
  * @see ControllerDialogCallback
  * @param props Other properties for REACT
@@ -174,12 +174,12 @@ function ControllerDialogInputs({data, onValueChange}: {
 export function ControllerDialog(
     {kind, controller, onDialogSubmit, ...props}: {
         kind: ControllerDialogKind,
-        controller?: ControllerProperties,
+        controller?: FullControllerProperties,
         onDialogSubmit: ControllerDialogCallback,
     } & React.ComponentProps<typeof DialogContent>,
 ) {
 
-    const initialProperties = controller ?? ControllerProperties
+    const initialProperties = controller ? controller.settings: ControllerProperties
 
     // Setting state attribute for rendering changed values
     const [controllerProperties, setControllerProperties] = useState<ControllerProperties>(
@@ -189,7 +189,7 @@ export function ControllerDialog(
     // Defining a dialog header
     const controllerName = (kind == ControllerDialogKind.CREATE)
         ? "a new controller"
-        : controllerProperties.name
+        : controller!.id
     const dialogHeader = {
         caption: `Settings of ${controllerName}`,
         description: `Edit the properties of ${controllerName}`

@@ -112,7 +112,7 @@ export function SidebarUserComponent(
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={data.onLogout}>
+            <DropdownMenuItem variant="destructive" onClick={() => data.onLogout()}>
               <IconLogout />
               Log out
             </DropdownMenuItem>

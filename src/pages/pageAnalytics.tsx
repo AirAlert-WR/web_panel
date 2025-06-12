@@ -1,6 +1,6 @@
 import * as Icons from "@tabler/icons-react";
 import {ChartDataPerTime} from "@/components/custom/embedded/analytics/chartDataPerTime.tsx";
-import { FilteredMeasurementData, FilteredMeasurementDataSchema} from "@/types/apiTypes.ts";
+import {FilteredMeasurementData, FilteredMeasurementDataSchema, MeasurementDataSchema} from "@/types/apiTypes.ts";
 
 import {get} from 'aws-amplify/api';
 import {useEffect, useState} from "react";
@@ -23,7 +23,7 @@ function Content() {
 
 
             try {
-                const restOperation = get({
+                const fetchDataOperation = get({
                     apiName: "AirAlertRestApi2",
                     path: "data/forTime",
                     options: {
@@ -34,11 +34,28 @@ function Content() {
                     }
                 });
 
-                const response = await restOperation.response;
-                const body = await response.body.json();
+                const dataResponse = await fetchDataOperation.response;
+                const dataBody = await dataResponse.body.json();
 
-                const parsed = FilteredMeasurementDataSchema.array().parse(body);
-                setMeasurementData(parsed);
+                const dataParsed = FilteredMeasurementDataSchema.array().parse(dataBody);
+
+                const guidingDataOperation = get({
+                    apiName: "AirAlertRestApi2",
+                    path: "data/guiding",
+                })
+                const guidingResponse = await guidingDataOperation.response;
+                const guidingBody = await guidingResponse.body.json();
+                const guidingParsed = MeasurementDataSchema.parse(guidingBody);
+
+                // Adding guiding Values into data array
+                for (const filteredMeasurementData of dataParsed) {
+                    filteredMeasurementData.entries.push({
+                        controllerID: "DEFAULT AND GUIDING",
+                        data: guidingParsed
+                    })
+                }
+
+                setMeasurementData(dataParsed);
 
             } catch (e) {
                 console.error("API call failed", e);

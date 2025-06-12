@@ -52,16 +52,36 @@ function createTimeSegmentsFromUntil(fromISO: string, untilISO: string, segments
  * @param controllerID the controller's id to filter for
  * @param timeISO the target timestamp to approximate for
  *
- * @return the according stored entry OR NULL (if not found)
+ * @return the according stored entry
  */
 function findClosestDataBefore(
     entries: DataAirQualityStoredEntry[],
     controllerID: string,
     timeISO: string
-): DataAirQualityStoredEntry | null {
-    return entries
-        .filter(e => e.controllerID === controllerID && e.timeStampISO <= timeISO)
-        .sort((a, b) => b.timeStampISO.localeCompare(a.timeStampISO))[0] ?? null;
+): DataAirQualityStoredEntry {
+    const relevant = entries.filter(e => e.controllerID === controllerID);
+
+    if (relevant.length === 0) {
+        throw new Error(`No data found for controller '${controllerID}'`);
+    }
+
+    // Versuche zuerst, den letzten Eintrag <= timeISO zu finden
+    const beforeOrAt = relevant
+        .filter(e => e.timeStampISO <= timeISO)
+        .sort((a, b) => b.timeStampISO.localeCompare(a.timeStampISO));
+
+    if (beforeOrAt.length > 0) return beforeOrAt[0];
+
+    // Fallback: nächstmöglicher Eintrag danach
+    const after = relevant
+        .filter(e => e.timeStampISO > timeISO)
+        .sort((a, b) => a.timeStampISO.localeCompare(b.timeStampISO));
+
+    if (after.length > 0) return after[0];
+
+    // (theoretisch überflüssig – aber als Absicherung)
+    throw new Error(`Unexpected: No entries found even though controller '${controllerID}' exists`);
+
 }
 
 // ####################################################################################################################

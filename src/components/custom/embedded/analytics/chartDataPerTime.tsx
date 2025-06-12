@@ -117,9 +117,9 @@ export function ChartDataPerTime(
                       key={id}
                       dataKey={id}
                       type="natural"
-                      fill={`url(#fill-${id})`}
+                      fill={chartConfig[id].color}
+                      fillOpacity={0.1}
                       stroke={chartConfig[id].color}
-                      stackId="a"
                       animationDuration={0}
                   />
               ))}

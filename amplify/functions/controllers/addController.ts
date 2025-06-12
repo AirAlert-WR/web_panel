@@ -4,6 +4,7 @@ import {
     CreateKeysAndCertificateCommand,
     CreateThingCommand,
     CreateThingTypeCommand,
+    DescribeEndpointCommand,
     IoTClient
 } from "@aws-sdk/client-iot"
 import {IoTDataPlaneClient, UpdateThingShadowCommand} from "@aws-sdk/client-iot-data-plane"
@@ -58,12 +59,17 @@ type CreateConfigContent = {
  *
  * @return string in INI format
  */
-function createConfig(content: CreateConfigContent): string {
+async function createConfig(content: CreateConfigContent): Promise<string> {
 
     try {
 
+        // Getting the mqtt host
+        const hostInfo= await ioTClient.send(new DescribeEndpointCommand({
+            endpointType: "iot:Data-ATS"
+        }))
+
         // Setting config file
-        const host = ioTClient.config.endpoint?.name ?? ""
+        const host = hostInfo.endpointAddress!
         const config: ControllerConfig = {
             mqtt: {
                 username: "",

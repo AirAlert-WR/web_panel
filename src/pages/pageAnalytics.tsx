@@ -21,8 +21,6 @@ function Content() {
     useEffect(() => {
         async function getMeasurementData() {
 
-            // Time problem: Fixing time measurement here:
-            const transformedTime = Date.now()-(60*60*1000*2)
 
             try {
                 const restOperation = get({
@@ -30,7 +28,7 @@ function Content() {
                     path: "data/forTime",
                     options: {
                         queryParams: {
-                            untilTimeStamp: new Date(transformedTime - 600000).toISOString(),
+                            untilTimeStamp: new Date(Date.now()-600000).toISOString(),
                             segments: "10",
                         },
                     }

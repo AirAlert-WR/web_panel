@@ -20,14 +20,18 @@ function Content() {
 
     useEffect(() => {
         async function getMeasurementData() {
+
+            // Time problem: Fixing time measurement here:
+            const transformedTime = Date.now()-(60*60*1000*2)
+
             try {
                 const restOperation = get({
                     apiName: "AirAlertRestApi2",
                     path: "data/forTime",
                     options: {
                         queryParams: {
-                            untilTimeStamp: new Date(Date.now() - 1000000).toISOString(),
-                            segments: "20",
+                            untilTimeStamp: new Date(transformedTime - 600000).toISOString(),
+                            segments: "10",
                         },
                     }
                 });

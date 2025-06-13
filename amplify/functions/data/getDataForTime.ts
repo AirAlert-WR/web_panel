@@ -75,7 +75,7 @@ function findClosestDataBefore(
                 humidity: 0,
             }
         }
-        entries.push(value)
+        relevant.push(value)
 
         // throw new Error(`No data found for controller '${controllerID}'`);
     }

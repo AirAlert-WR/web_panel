@@ -61,25 +61,40 @@ function findClosestDataBefore(
 ): DataAirQualityStoredEntry {
     const relevant = entries.filter(e => e.controllerID === controllerID);
 
+    // If no entry for controller found (ATTENTION: EMERGENCY SOLUTION)
     if (relevant.length === 0) {
-        throw new Error(`No data found for controller '${controllerID}'`);
+        // Adding item with zero values
+        const value: DataAirQualityStoredEntry = {
+            timeStampISO: timeISO,
+            controllerID: controllerID,
+            data: {
+                pm2_5: 0,
+                pm10: 0,
+                co2: 0,
+                temperature: 0,
+                humidity: 0,
+            }
+        }
+        entries.push(value)
+
+        // throw new Error(`No data found for controller '${controllerID}'`);
     }
 
-    // Versuche zuerst, den letzten Eintrag <= timeISO zu finden
+    // Trying to find the entry at the nearest timeStamp BEFORE THE ENTRY
     const beforeOrAt = relevant
         .filter(e => e.timeStampISO <= timeISO)
         .sort((a, b) => b.timeStampISO.localeCompare(a.timeStampISO));
 
     if (beforeOrAt.length > 0) return beforeOrAt[0];
 
-    // Fallback: nächstmöglicher Eintrag danach
+    // Fallback: nearest entry after thath
     const after = relevant
         .filter(e => e.timeStampISO > timeISO)
         .sort((a, b) => a.timeStampISO.localeCompare(b.timeStampISO));
 
     if (after.length > 0) return after[0];
 
-    // (theoretisch überflüssig – aber als Absicherung)
+    // Securing the Result gathering with a potential exception
     throw new Error(`Unexpected: No entries found even though controller '${controllerID}' exists`);
 
 }

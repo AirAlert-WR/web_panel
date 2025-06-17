@@ -5,7 +5,6 @@ import "./index.css";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
 import { parseAmplifyConfig } from "aws-amplify/utils";
-import {fetchAuthSession} from "aws-amplify/auth";
 
 const amplifyConfig = parseAmplifyConfig(outputs);
 
@@ -23,7 +22,7 @@ Amplify.configure(
                 retryStrategy: {
                     strategy: "no-retry",
                 },
-                headers: async () => {
+                /*headers: async () => {
                     try {
                         const session = await fetchAuthSession();
                         const token = session.tokens?.idToken?.toString();
@@ -34,7 +33,7 @@ Amplify.configure(
                         console.error("Fehler beim Abrufen des Auth-Tokens:", error);
                     }
                     return {Authorization: ""};
-                },
+                },*/
             },
         },
     },

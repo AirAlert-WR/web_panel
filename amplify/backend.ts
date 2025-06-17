@@ -41,7 +41,7 @@ const myRestApi = new RestApi(apiStack, "AirAlertRestApi2", {
         ],
     },
     defaultMethodOptions: {
-        authorizationType: AuthorizationType.NONE,
+        authorizationType: AuthorizationType.IAM,
         apiKeyRequired: false,
     },
 });
@@ -151,12 +151,8 @@ const apiRestPolicy = new Policy(apiStack, "AirAlertRestApiPolicy", {
     ],
 });
 // attach the policy to the authenticated and unauthenticated IAM roles
-backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(
-    apiRestPolicy
-);
-backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(
-    apiRestPolicy
-);
+backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(apiRestPolicy);
+//backend.auth.resources.unauthenticatedUserIamRole.attachInlinePolicy(apiRestPolicy);
 
 
 // add outputs to the configuration file: REST API and AUTHORIZER

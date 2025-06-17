@@ -4,6 +4,7 @@ import {FilteredMeasurementData, FilteredMeasurementDataSchema, MeasurementDataS
 
 import {get} from 'aws-amplify/api';
 import {useEffect, useState} from "react";
+import { fetchAuthSession } from 'aws-amplify/auth'
 
 export const DATA = {
     id: "analytics",
@@ -23,6 +24,13 @@ function Content() {
 
 
             try {
+                const session = await fetchAuthSession();
+                const token = session.tokens?.idToken?.toString();
+
+                if (!token) {
+                    throw new Error("User (probably) not logged in");
+                }
+
                 const fetchDataOperation = get({
                     apiName: "AirAlertRestApi2",
                     path: "data/forTime",
@@ -30,6 +38,9 @@ function Content() {
                         queryParams: {
                             untilTimeStamp: new Date(Date.now()-600000).toISOString(),
                             segments: "10",
+                        },
+                        headers: {
+                            Authorization: token,
                         },
                     }
                 });
@@ -42,6 +53,11 @@ function Content() {
                 const guidingDataOperation = get({
                     apiName: "AirAlertRestApi2",
                     path: "data/guiding",
+                    options: {
+                        headers: {
+                            Authorization: token,
+                        },
+                    },
                 })
                 const guidingResponse = await guidingDataOperation.response;
                 const guidingBody = await guidingResponse.body.json();

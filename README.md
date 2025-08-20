@@ -1,24 +1,32 @@
-## AWS Amplify React+Vite Starter Template
+# AirAlert_IoT_web_panel
+Code for the amplify deployment space to use as the web app for the project "AirAlert"
 
-This repository provides a starter template for creating applications using React+Vite and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+> !!!ATTENTION!!!
+> For this repository, the [Amplify React+Vite template](https://github.com/aws-samples/amplify-vite-react-template) was used as a template.
 
-## Overview
+## Description and Overview
 
-This template equips you with a foundational React application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+This repository provides AWS Amplify configuration code for creating:
+- an **API (REST)** for modifying controller properties and measurement data entries.
+- a **Cognito** security implementation for restricted access
+- a React-based frontend **web page** for visual data insight and configuration
 
-## Features
+## Installation and initialization
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+> !!!ATTENTION!!!
+> Copying the repository's content and pasting it inside another is **not recommended**.
+> Please **FORK** this repository if you want to deploy or develop inside its code.
 
-## Deploying to AWS
+### Preconfiguring the AWS cloud infrastructure
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/react/start/quickstart/#deploy-a-fullstack-app-to-aws) of our documentation.
+**MAKE SURE** you have yet followed the initial steps inside the [preparation repository](https://github.com/AirAlert-WR/server_repository). These are necessary for the web panel to work properly.
 
-## Security
+### Deploying to AWS
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+Short instruction:
+Go to your admin console and navigate to the amplify section. Add a new GitHub connection for accessing the repository. Then, deploy the app (during this process, a build is also performed).
+
+For detailed instructions on deploying this application, refer to the [deployment section](https://docs.amplify.aws/react/start/quickstart/#deploy-a-fullstack-app-to-aws) of Amazon's documentation.
 
 ## License
 

@@ -1,0 +1,140 @@
+@startuml
+left to right direction
+hide empty methods
+hide empty fields
+
+package ApiTypes {}
+note top of ApiTypes: "Copying types of API definitions"
+
+package components {
+
+    package ui {}
+    note top of ui: "Components copyied by ShadCN. Not modelling them."
+    
+    package custom {
+    
+        package global {
+    
+            class header {
+                + {static} MySiteHeader(): React...
+            }
+        
+            class sidebar {
+                - {static} NavigationSection(props: React...): React...
+                + {static} MySidebar(userData: SidebarUserData; props: React...): React...
+            }
+        
+        }
+        
+        package embedded {
+            
+            package sidebarUser {
+            
+                class SidebarUser {
+                    - {static} AvatarElement(user: SidebarUserData): React...
+                    + {static} SidebarUserComponent(data: SidebarUserData): React...
+                }
+                
+                interface SidebarUserData {
+                    + userName: String
+                    + email: String
+                    + avatarPath: String
+                    + onLogout: () => {}
+                }
+            }
+            
+            class analytics {
+                + {static} ChartDataPerTime(data: FilteredMeasurementData[], measurementKey: keyof MeasurementData): React...            
+            }
+            
+            package controllers {
+                
+                class controllers {
+                    + {static} ControllerAddButton(onDialogSubmit: ControllerDialogCallback, props: React...): React...
+                    + {static} ControllerCard(controller: FullControllerProperties, onDialogSubmit: ControllerDialogCallbak, props: React...): React...
+                    - {static} ControllerDialogButtons(kind: ControllerDialogKind, onButtonClick: (result: ControllerDialogSubmitResult) => void): React...
+                    - {static} ControllerDialogInputs(data: ControllerProperties, onValueChange: (data: ControllerProperties) => void): React...
+                    + {static} ControllerDialog(kind: ControllerDialogKind, controller?: FullControllerProperties, onDialogSubmit: ControllerDialogCallback, props: React...): React...
+          
+                }
+                
+                enum ControllerDialogKind {
+                    CREATE = 0,
+                    MODIFY = 1
+                }
+                
+                enum ControllerDialogSubmitResult {
+                    CLOSE = 0,
+                    SUBMIT = 1,
+                    DELETE = 2
+                }
+                
+                interface ControllerDialogCallback {
+                    + result: ControllerDialogSubmitResult
+                    + properties: ControllerProperties
+                }
+            }
+        }
+    
+    }
+    
+}
+
+package pages {
+
+    package pages {
+    
+    class PageAbout {
+        + {override} DATA
+        - Content(): React...
+    }
+    
+    class PageAnalytics {
+        + {override} DATA
+        - Content(): React...
+    }
+    
+    class PageControllers {
+        + {override} DATA
+        - Content(): React...
+        
+        - {static} getControllers(): FullControllerProperties[] | string
+        - {static} addController(properties: ControllerProperties) : void | string
+        - {static} modController(id: string, properties: ControllerProperties) : void | string
+        - {static} delController(id: string) : void | string
+    }
+    
+    }
+    
+    interface Page {
+        id: string
+        title: string
+        icon: Icons.Icon
+        component: React.ComponentType
+        enabled: boolean
+    }
+    
+    interface PageStore {
+        pages: Page[]
+        currentPageId: PageId
+        setCurrentPage: (id: PageId) => void
+    }
+    
+    class index {
+        + DefaultPageID(): string
+        + usePageStore(): PageStore
+        + useCurrentPage(): Page
+    }
+    
+}
+note top of pages: "Shown as Class inheritance but, due to React, there isn't."
+
+package lib {}
+note top of lib: "Helper methods used by external components."
+
+class App {
+    - {static} function AppContent(userData: SidebarUserData): React...
+    + {static} function App(): React...
+}
+
+@enduml

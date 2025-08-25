@@ -1,0 +1,186 @@
+@startuml
+left to right direction
+hide empty fields
+hide empty methods
+
+    package types {
+
+        interface ZodSchema {}
+        note top of ZodSchema: Reassembling a schema parsing marker
+
+        package controller {
+            ' TYPE MutableControllerCloudSettings
+            interface MutableControllerCloudSettings implements types.ZodSchema {
+                + name: string
+                + interval: number
+            }
+            ' TYPE ControllerCloudSettings
+            interface ControllerCloudSettings implements types.ZodSchema {
+                + id: string
+                + configURL: string
+                + settings: MutableControllerCloudSettings
+            }
+            ' TYPE ControllerConfig
+            interface ControllerConfig implements types.ZodSchema {
+                [mqtt]
+                + username: string
+                + password: string
+                + path_RootCA: string
+                + path_Certificate: string
+                + path_PrivateKey: string
+                + use_tls: boolean
+                + host: string
+                + port: number
+            }
+        }
+
+        package data {
+            ' TYPE DataAirQuality
+            interface DataAirQuality implements types.ZodSchema {
+                + pm2_5: number
+                + pm10: number
+                + co2: number
+                + temperature: number
+                + humidity: number
+            }
+            ' TYPE DataAirQualityStoredEntry
+            interface DataAirQualityStoredEntry implements types.ZodSchema {
+                + {key} controllerID: string
+                + {key} timeStampISO: string
+                + data: DataAirQuality
+            }
+            DataAirQualityStoredEntry <- DataAirQuality: stores internally
+            ' TYPE DataAirQualityForController
+            interface DataAirQualityForController implements types.ZodSchema {
+                + controllerID: string
+                + data: DataAirQuality
+            }
+            DataAirQualityForController <- DataAirQuality: stores internally
+            ' TYPE DataAirQualityForTime
+            interface DataAirQualityForTime implements types.ZodSchema {
+                + timeStampISO: string
+                + entries: DataAirQualityPerController[]
+            }
+            DataAirQualityForTime <- DataAirQualityForController : stores internally
+        }
+
+        package errors {
+            ' TYPE Errors
+            class AppError {
+                + constructor(message: string, statusCode = 500)
+            }
+            class NotFoundError extends AppError {
+                + {override} constructor
+            }
+            class ValidationError extends AppError {
+                + {override} constructor
+            }
+        }
+
+        class helpers {
+            ' FUNCTION Helpers
+            + {static} parseWithSchema<T>(json_: string, schema: ZodSchema<T>): T
+            + {static} parseS3KeyFromUrl(url: string): string | null
+            + {static} createApiResponse(statusCode: number, body: unknown): APIGatewayProxyResult
+        }
+        note top of helpers: "Just adding the helper function section, for completeness"
+
+    }
+
+
+    ' FOLDER "controllers"
+    package controllers {
+
+        ' FUNCTION "getAllControllers"
+        class GetAllControllers {
+            + {static} getAllControllers(): string[]
+        }
+
+        ' FUNCTION "addController"
+        package AddController {
+            class AddController {
+                + {static} addController(settings: MutableControllerCloudSettings)
+                - {static} createConfig(content: CreateConfigContent): string
+                - {static} createZip(controllerID: string, content: CreateZipContent): CreateZipResult
+            }
+            interface CreateZipContent {
+                 + contentCertificate: string
+                 + contentPrivateKey: string
+            }
+            interface CreateZipResult {
+                 + zipURL: string
+            }
+            interface CreateConfigContent {
+                 + id: string
+                 + pathCertificate: string
+                 + pathPrivateKey: string
+                 + pathRootCA: string
+            }
+        }
+
+        ' FUNCTION "getController"
+        class GetController {
+            + {static} getController(controllerID: string): ControllerCloudSettings
+        }
+        GetController -> GetAllControllers: uses
+
+        ' FUNCTION "modController"
+        class ModController {
+            + {static} modController(controllerID: string, settings: MutableControllerCloudSettings)
+        }
+        ModController -> GetController: uses
+
+        ' FUNCTION "delController"
+        class DelController {
+            + {static} delController(controllerID: string)
+        }
+        DelController -> GetController: uses
+
+        ' HANDLER for Controller
+        class Handler {
+            + {override} handler
+        }
+        note top of Handler: Reassembling AWS Lambda function marker
+
+        controllers.Handler -> AddController: uses
+        controllers.Handler -> GetAllControllers: uses
+        controllers.Handler -> GetController: uses
+        controllers.Handler -> ModController: uses
+        controllers.Handler -> DelController: uses
+    }
+    controllers -> types.errors: functions can throw
+    controllers -> types.helpers: can use
+    controllers -> types.controller: can use
+
+    ' FOLDER "data"
+    package data {
+
+        ' FUNCTION "getDataGuiding"
+        class GetDataGuiding {
+            + {static} getDataGuiding(): DataAirQuality
+        }
+
+        ' FUNCTION "getDataForTime"
+        class GetDataForTime {
+            - createTimeSegmentsFromUntil(fromISO: string, untilISO: string, segments: number): string[]
+            - findClosestDataBefore(entries: DataAirQualityStoredEntry[], controllerID: string, timeISO: string): DataAirQualityStoredEntry
+            + getDataForTime(untilTimestamp: string, segments: number): DataAirQualityForTime[]
+        }
+
+        ' HANDLER for Data
+        class Handler {
+            + {override} handler
+        }
+        note top of Handler: Reassembling AWS Lambda function marker
+
+        data.Handler -> GetDataGuiding: uses
+        data.Handler -> GetDataForTime: uses
+
+    }
+    data -> types.errors: functions can throw
+    data -> types.helpers: can use
+    data -> types.data: can use
+    data -> types.controller: can use
+
+
+@enduml

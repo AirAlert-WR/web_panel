@@ -1,0 +1,609 @@
+openapi: "3.0.0"
+info:
+  title: AirAlert REST API
+  version: "1.0"
+
+# Security implementation
+security:
+  - cognito_auth: [ ]
+
+components:
+
+  # Security: Cognito (token inside HEADER)
+  securitySchemes:
+    cognito_auth:
+      description: "The authorization manager for secure access"
+      type: apiKey
+      name: "Authorization"
+      in: header
+      x-amazon-apigateway-authorizer:
+        type: cognito_user_pools
+        providerARNs:
+
+          # IMPORTANT: UPDATE this "pool ARN key" if necessary
+          - arn:aws:cognito-idp:eu-central-1:537108026853:userpool/eu-central-1_t07S3boLv
+
+  # Schemas and Definitions
+  schemas:
+  
+    # TYPE MutableControllerCloudSettings
+    TMutableControllerCloudSettings:
+      description: "Writable controller configuration"
+      type: object
+      required:
+        - name
+        - interval
+      properties:
+      
+        # ATTR name: String
+        name:
+          description: "Custom name for logical assignment"
+          type: string
+          minLength: 1
+        
+        # ATTR interval: Number
+        interval:
+          description: "Time between two measuring cycles (s)"
+          type: number
+          minimum: 10
+          default: 10
+          
+          
+    # TYPE ControllerCloudSettings
+    TControllerCloudSettings:
+      description: "All controller configuration settings"
+      type: object
+      required:
+        - id
+        - configURL
+        - settings
+      properties:
+        
+        # ATTR id: String
+        id:
+          description: "Unique controller identification"
+          type: string
+          minLength: 1
+          
+        # ATTR configURL: String(URL)
+        configURL:
+          description: "URL to the archive containing configuration and certificates"
+          type: string
+          format: uri
+          
+        # ATTR settings: MutableControllerCloudSettings
+        settings:
+          $ref: "#/components/schemas/TMutableControllerCloudSettings"
+          
+          
+    # TYPE DataAirQuality
+    TDataAirQuality:
+      description: "Schema for general air quality data"
+      type: object
+      required:
+        - pm2_5
+        - pm10
+        - co2
+        - temperature
+        - humidity
+      properties:
+      
+        # ATTR pm2_5: Number
+        pm2_5:
+          description: "Amout of pm2.5 particles"
+          type: number
+          
+        # ATTR pm10: Number
+        pm10:
+          description: "Amout of pm10 particles"
+          type: number
+          
+        # ATTR co2: Number
+        co2:
+          description: "Amout of co2 molecules"
+          type: number
+          
+        # ATTR temperature: Number
+        temperature:
+          description: "Environment temperature"
+          type: number
+          
+        # ATTR humidity: Number
+        humidity:
+          description: "Relative humidity"
+          type: number
+          
+    
+    # TYPE DataAirQualityStoredEntry
+    TDataAirQualityStoredEntry:
+      description: "Air quality, but in database representation"
+      type: object
+      required:
+        - timeStampISO
+        - controllerID
+        - data
+      properties:
+      
+        # ATTR timeStampISO: String(date-time; PRIMARYKEY)
+        timeStampISO:
+          description: "Time of database inserting"
+          type: string
+          format: date-time
+          
+        # ATTR controllerID: String
+        controllerID:
+          description: "Controller performing the measuring"
+          type: string
+          minLength: 1
+          
+        # ATTR data: TDataAirQuality
+        data:
+          $ref: "#/components/schemas/TDataAirQuality"
+          
+          
+    # TYPE DataAirQualityStoredEntry
+    TDataAirQualityForController:
+      description: "Air quality assigned to a controller"
+      type: object
+      required:
+        - controllerID
+        - data
+      properties:
+          
+        # ATTR controllerID: String
+        controllerID:
+          description: "Controller performing the measuring"
+          type: string
+          minLength: 1
+          
+        # ATTR data: TDataAirQuality
+        data:
+          $ref: "#/components/schemas/TDataAirQuality"
+          
+    
+    # TYPE DataAirQualityForTime
+    TDataAirQualityForTime:
+      description: "Data-controller aligned output at a specific time"
+      type: object
+      required:
+        - timeStampISO
+        - entries
+      properties:
+      
+        # ATTR timeStampISO: String(date-time; PRIMARYKEY)
+        timeStampISO:
+          description: "Time of 'recording' the data"
+          type: string
+          format: date-time
+          
+        # ATTR entries: array(DataAirQualityForController)
+        entries:
+          description: "For"
+          type: array
+          items:
+              
+             $ref: "#/components/schemas/TDataAirQualityForController"
+        
+
+
+
+paths:
+  # MODULE controller
+  /controller:
+
+    # GET controller: all controller ids
+    get:
+      summary: "Get the IDs of all registered controllers"
+
+      # NO Parameters
+      # NO Request body
+
+      # Results
+      responses:
+      
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+              
+                # IS array(String)
+                description: "List of controller IDs"
+                type: array
+                uniqueItems: true
+                items:
+                  type: string
+
+
+    # POST controller: create a new controller
+    post:
+      summary: "Add a new controller as a thing"
+
+      # NO Parameters
+
+      # Request body
+      requestBody:
+        description: "New controller settings (but mutable)"
+        required: true
+        content:
+          application/json:
+            schema:
+
+              # IS MutableControllerCloudSettings
+              $ref: "#/components/schemas/TMutableControllerCloudSettings"
+
+      # Results
+      responses:
+      
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT ValidationError
+        '400':
+          description: "Validation failure"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+
+
+  # MODULE controller/{id}
+  /controller/{id}:
+
+    # GET controller/{id}: Get a controller's settings
+    get:
+      summary: "Get the settings of a controller"
+
+      # Parameters
+      parameters:
+
+        # PATH-PARAM id
+        - name: id
+          in: path
+          description: "The controller's ID"
+          required: true
+          schema:
+            type: string
+
+      # NO Request body
+
+      # Results
+      responses:
+      
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT id not found
+        '404':
+          description: "Controller not found"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+        
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+                
+                # IS ControllerCloudSettings
+                $ref: "#/components/schemas/TControllerCloudSettings"
+
+
+    # PUT controller/{id}: Modify a controller's settings
+    put:
+      summary: "Modify the settings of a controller"
+
+      # Parameters
+      parameters:
+
+        # PATH-PARAM id
+        - name: id
+          in: path
+          description: "The controller's ID"
+          required: true
+          schema:
+            type: string
+
+      # Request body
+      requestBody:
+        description: "New controller settings"
+        required: true
+        content:
+          application/json:
+            schema:
+
+              # IS MutableControllerCloudSettings
+              $ref: "#/components/schemas/TMutableControllerCloudSettings"
+
+      # Results
+      responses:
+
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT ValidationError
+        '400':
+          description: "Validation failure"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT id not found
+        '404':
+          description: "Controller not found"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+        
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+
+
+    # DELETE controller: remove a controller
+    delete:
+      summary: "Remove a controller (got by ID)"
+
+      # Parameters
+      parameters:
+
+        # PATH-PARAM id
+        - name: id
+          in: path
+          description: "The controller's ID"
+          required: true
+          schema:
+            type: string
+
+      # NO Request body
+
+      # Results
+      responses:
+
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT id not found
+        '404':
+          description: "Controlle not found"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+        
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+
+
+
+
+  # MODULE data/guiding
+  /data/guiding:
+
+    # GET data/ref_value: Get reference data entries
+    get:
+      description: "Get standard/reference data entries"
+
+      # NO Parameters
+      # NO Request body
+
+      # Results
+      responses:
+
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+                
+                # IS DataAirQuality
+                $ref: "#/components/schemas/TDataAirQuality"
+  
+
+  # MODULE data/forTime
+  /data/forTime:
+
+    # GET data/history: Get filtered data entries over a time
+    get:
+      description: "Get saved measurement data entries"
+
+      # Parameters
+      parameters:
+      
+        # QUERY-PARAM untilTimeStamp
+        - name: untilTimeStamp
+          in: query
+          description: "Earliest timestamp of the fetched values"
+          required: true
+          schema:
+
+            # IS String(date-time)
+            type: string
+            format: date-time
+
+        # QUERY-PARAM count
+        - name: segments
+          in: query
+          description: "Number of segments to devide the time range"
+          required: true
+          schema:
+
+            # IS Integer
+            type: integer
+            minimum: 1
+            default: 1
+
+      # NO Request body
+
+      # Results
+      responses:
+      
+        # RESULT Failure
+        '500':
+          description: "ERROR"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT ValidationError
+        '400':
+          description: "Validation failure"
+          content:
+            application/json:
+              schema:
+                # Message
+                type: object
+                properties:
+                  # ATTR message: String
+                  message:
+                    type: string
+                    
+        # RESULT Success
+        '200':
+          description: "SUCCESS"
+          content:
+            application/json:
+              schema:
+              
+                
+                # IS array(DataAirQualityForTime)
+                type: array
+                description: "List of calculated data"
+                items:
+                  $ref: "#/components/schemas/TDataAirQualityForTime"

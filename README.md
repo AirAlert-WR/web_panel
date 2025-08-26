@@ -28,6 +28,20 @@ Go to your admin console and navigate to the amplify section. Add a new GitHub c
 
 For detailed instructions on deploying this application, refer to the [deployment section](https://docs.amplify.aws/react/start/quickstart/#deploy-a-fullstack-app-to-aws) of Amazon's documentation.
 
+### Adding a login user
+
+For a successful login, at least **one user account** must be added to the recently deployed "Cognito" pool.
+
+1. Navigate to **Amazon Cognito** using your console and open "User pools". Click on the identifier similar to "amplifyAuthUserPool4BA7F805-S7oVMbUN2NpO".
+2. Open "User Management"->"Users" and create a **new user** with the following properties:
+   - Don't send any invitation link
+   - Email-Adress: **YOUR OWN**
+   - Mark Email as **verified**
+   - Set a password (instead of generating)
+   - Password: **YOUR OWN**
+3. Save the user.
+4. Check your email account **before and after logging in**. Perhaps some additional confirmations should be done.
+
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.

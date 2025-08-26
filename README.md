@@ -32,7 +32,7 @@ For detailed instructions on deploying this application, refer to the [deploymen
 
 For a successful login, at least **one user account** must be added to the recently deployed "Cognito" pool.
 
-1. Navigate to **Amazon Cognito** using your console and open "User pools". Click on the identifier similar to "amplifyAuthUserPool4BA7F805-S7oVMbUN2NpO".
+1. Navigate to **Amazon Cognito** using your console and open "User pools". Click on the identifier "**AirAlert User Pool**".
 2. Open "User Management"->"Users" and create a **new user** with the following properties:
    - Don't send any invitation link
    - Email-Adress: **YOUR OWN**

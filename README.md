@@ -42,6 +42,39 @@ For a successful login, at least **one user account** must be added to the recen
 3. Save the user.
 4. Check your email account **before and after logging in**. Perhaps some additional confirmations should be done.
 
+## Instruction to use
+
+Once everything is loaded into and configured inside the cloud, you may open the web application **with the public link provided through Amplify**
+
+As you're not logged in, you may see such a dialog at the first start: <br/>
+![Login dialog](asset/Login.png)
+Where:
+1. shows the input area for your login credentials
+2. is the button for performing a login, while submitting the input
+3. provides a password reset if clicked
+
+After a successful login you're gonna look at this interface: <br/>
+![Web application interface](asset/Main.png)
+Where:
+1. is the button for expanding or showing the sidebar
+2. is the panel (combined with application name and logo) that lets you navigate to the default page (while clicking on it)
+3. collects entries of **all available sub pages** so you may navigate through the application
+4. is the "logout" button for closing the current user session
+5. shows the programmed caption of the current sub page
+6. leads you to the **GitHub** organisation bound with this project.
+7. is the sub page's container
+
+### Inside the "Analytics" page
+
+This sub page does not provide any buttons or clickable controls, but interactive diagrams for all stored data entry kinds of air quality measurement. 
+While hovering over a diagram, you may experience a picture like this: <br/>
+![Diagram](asset/Analysis.png)
+Where:
+1. shows the diagram value lines in a relative way (in this case, the upper line shows the guiding value)
+2. is the popup info item showing the **exact values** for all registered controllers, together with the time.
+
+
+   
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.

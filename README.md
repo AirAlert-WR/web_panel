@@ -58,7 +58,7 @@ Where:
 After a successful login you're gonna look at this interface: <br/>
 ![Web application interface](asset/Main.png)
 Where:
-1. is the button for expanding or showing the sidebar
+1. is the button for expanding or showing the sidebar (child items **marked in green**)
 2. is the panel (combined with application name and logo) that lets you navigate to the default page (while clicking on it)
 3. collects entries of **all available sub pages** so you may navigate through the application (currently, the "About" screen is open)
 4. is the "logout" button for closing the current user session

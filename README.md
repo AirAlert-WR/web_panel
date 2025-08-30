@@ -95,7 +95,7 @@ Where:
 2. should be clicked if you want to cancel the operation
 3. is the area where the current settings (automatically displayed since initialization) may be modified.
 
-For confirming the changes you may click the (mostly self-explaining) buttons at the bottom of each dialog.
+For confirming the changes you may click the **(mostly self-explaining) buttons at the bottom** of each dialog.
 
 ### These are general-purpose explorer instructions. Feel free to adapt the application usage to your workflow...
 

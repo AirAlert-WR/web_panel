@@ -89,6 +89,7 @@ Where:
 The open dialogs look like those: <br/>
 |![Add dialog](asset/Dialog1.png)|![Mod dialog](asset/Dialog2.png)|
 |:-:|:-:|
+
 Where:
 1. displays an introductionary caption
 2. should be clicked if you want to cancel the operation
